@@ -29,7 +29,7 @@ docker run -d \
   --name bookstack \
   -p 8080:80 \
   -v bookstack_uploads:/var/www/html/storage/uploads \
-  -e BOOKSTACK_ADMIN_USER=admin \
+  -e BOOKSTACK_ADMIN_EMAIL=admin@example.com \
   -e BOOKSTACK_ADMIN_PASSWORD=changeme123 \
   -e BOOKSTACK_ADMIN_NAME=Admin \
   -e TZ=UTC \
@@ -47,8 +47,7 @@ docker run -d \
 1. **Access BookStack**: Navigate to `http://localhost:8080`
 
 2. **First Login**: 
-   - Email: The email from `BOOKSTACK_ADMIN_USER@bookstack.local` 
-     (e.g., if you set `BOOKSTACK_ADMIN_USER=admin`, the email is `admin@bookstack.local`)
+   - Email: The email you set via `BOOKSTACK_ADMIN_EMAIL`
    - Password: The password you set via `BOOKSTACK_ADMIN_PASSWORD`
 
 3. **Configure Settings**: 
@@ -65,7 +64,7 @@ docker run -d \
 ### Environment Variables
 
 #### Required Variables
-- `BOOKSTACK_ADMIN_USER`: Admin username (**REQUIRED**)
+- `BOOKSTACK_ADMIN_EMAIL`: Admin email address (**REQUIRED**)
 - `BOOKSTACK_ADMIN_PASSWORD`: Admin password (**REQUIRED**)
 - `TZ`: Timezone (**REQUIRED**) - See [TIMEZONES.md](TIMEZONES.md) or [Wikipedia](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
 

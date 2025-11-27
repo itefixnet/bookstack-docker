@@ -6,8 +6,8 @@
 set -e
 
 # Check required environment variables
-if [ -z "$BOOKSTACK_ADMIN_USER" ]; then
-    echo "ERROR: BOOKSTACK_ADMIN_USER environment variable is required"
+if [ -z "$BOOKSTACK_ADMIN_EMAIL" ]; then
+    echo "ERROR: BOOKSTACK_ADMIN_EMAIL environment variable is required"
     exit 1
 fi
 
@@ -23,8 +23,7 @@ if [ -z "$TZ" ]; then
 fi
 
 # Use environment variables
-ADMIN_USER="$BOOKSTACK_ADMIN_USER"
-ADMIN_EMAIL="${ADMIN_USER}@bookstack.local"
+ADMIN_EMAIL="$BOOKSTACK_ADMIN_EMAIL"
 ADMIN_PASSWORD="$BOOKSTACK_ADMIN_PASSWORD"
 ADMIN_NAME="${BOOKSTACK_ADMIN_NAME:-Admin}"
 APP_URL="${BOOKSTACK_APP_URL:-http://localhost:8080}"
