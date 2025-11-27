@@ -51,7 +51,9 @@ RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-av
 
 # Copy entrypoint script
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+COPY config-database.php /var/www/html/app/Config/database.php
+RUN chmod +x /usr/local/bin/entrypoint.sh \
+    && chown www-data:www-data /var/www/html/app/Config/database.php
 
 # Create volume mount points
 VOLUME ["/var/www/html/storage/uploads", "/var/www/html/storage/database"]
