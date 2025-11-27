@@ -8,21 +8,19 @@ RUN apt-get update && apt-get install -y \
     curl \
     git \
     unzip \
+    netcat-openbsd \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
     libzip-dev \
     libicu-dev \
     libldap2-dev \
-    libsqlite3-dev \
-    sqlite3 \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
     gd \
     mysqli \
     pdo \
     pdo_mysql \
-    pdo_sqlite \
     zip \
     intl \
     ldap \
@@ -51,12 +49,10 @@ RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-av
 
 # Copy entrypoint script
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-COPY config-database.php /var/www/html/app/Config/database.php
-RUN chmod +x /usr/local/bin/entrypoint.sh \
-    && chown www-data:www-data /var/www/html/app/Config/database.php
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Create volume mount points
-VOLUME ["/var/www/html/storage/uploads", "/var/www/html/storage/database"]
+VOLUME ["/var/www/html/storage/uploads", "/var/www/html/public/uploads"]
 
 # Expose port
 EXPOSE 80

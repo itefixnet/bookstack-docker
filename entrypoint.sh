@@ -29,6 +29,13 @@ ADMIN_PASSWORD="$BOOKSTACK_ADMIN_PASSWORD"
 ADMIN_NAME="${BOOKSTACK_ADMIN_NAME:-Admin}"
 APP_URL="${BOOKSTACK_APP_URL:-http://localhost:8080}"
 
+# Database configuration
+DB_HOST="${DB_HOST:-mariadb}"
+DB_PORT="${DB_PORT:-3306}"
+DB_DATABASE="${DB_DATABASE:-bookstack}"
+DB_USERNAME="${DB_USERNAME:-bookstack}"
+DB_PASSWORD="${DB_PASSWORD:-bookstack}"
+
 # Set timezone
 echo "Setting timezone to: $TZ"
 echo "$TZ" > /etc/timezone
@@ -47,8 +54,22 @@ echo "Configuring PHP settings..."
 # Wait for file system to be ready
 sleep 2
 
+# Wait for database to be ready (if using external DB)
+if [ -n "$DB_HOST" ]; then
+    echo "Waiting for database at $DB_HOST:$DB_PORT..."
+    for i in {1..30}; do
+        if nc -z "$DB_HOST" "$DB_PORT" 2>/dev/null; then
+            echo "Database is ready!"
+            break
+        fi
+        if [ $i -eq 30 ]; then
+            echo "Warning: Database not responding after 30 seconds, continuing anyway..."
+        fi
+        sleep 1
+    done
+fi
+
 # Create necessary directories
-mkdir -p /var/www/html/storage/database
 mkdir -p /var/www/html/storage/uploads
 mkdir -p /var/www/html/public/uploads
 
@@ -73,7 +94,7 @@ else
     APP_KEY=$(grep "APP_KEY=" "$ENV_FILE" | cut -d'=' -f2)
 fi
 
-# Create .env file with SQLite configuration
+# Create .env file with MySQL/MariaDB configuration
 cat > "$ENV_FILE" << EOF
 # Application Configuration
 APP_NAME=BookStack
@@ -85,15 +106,13 @@ APP_LANG=en
 APP_AUTO_LANG_PUBLIC=true
 APP_TIMEZONE=$TZ
 
-# Database Configuration (SQLite)
-DB_CONNECTION=sqlite
-DB_DATABASE=/var/www/html/storage/database/database.sqlite
-
-# Additional SQLite settings (ensure no MySQL fallback)
-DB_HOST=
-DB_PORT=
-DB_USERNAME=
-DB_PASSWORD=
+# Database Configuration (MySQL/MariaDB)
+DB_CONNECTION=mysql
+DB_HOST=$DB_HOST
+DB_PORT=$DB_PORT
+DB_DATABASE=$DB_DATABASE
+DB_USERNAME=$DB_USERNAME
+DB_PASSWORD=$DB_PASSWORD
 
 # Mail Configuration (optional - configure later)
 MAIL_DRIVER=smtp
@@ -143,12 +162,12 @@ rm -f /var/www/html/bootstrap/cache/config.php
 initialize_bookstack() {
     cd /var/www/html
     
-    # Create SQLite database file if it doesn't exist
-    if [ ! -f /var/www/html/storage/database/database.sqlite ]; then
-        echo "Creating SQLite database..."
-        touch /var/www/html/storage/database/database.sqlite
-        chown www-data:www-data /var/www/html/storage/database/database.sqlite
-        chmod 644 /var/www/html/storage/database/database.sqlite
+    # Check if database is already initialized
+    echo "Checking database status..."
+    TABLE_COUNT=$(su -s /bin/bash -c "cd /var/www/html && php artisan tinker --execute='echo \\DB::table(\"migrations\")->count();'" www-data 2>/dev/null || echo "0")
+    
+    if [ "$TABLE_COUNT" = "0" ] || [ -z "$TABLE_COUNT" ]; then
+        echo "Initializing database..."
         
         # Run migrations as www-data user
         echo "Running database migrations..."
@@ -160,7 +179,7 @@ initialize_bookstack() {
         
         echo "BookStack initialization completed!"
     else
-        echo "Database already exists, running migrations if needed..."
+        echo "Database already initialized, running migrations if needed..."
         su -s /bin/bash -c "cd /var/www/html && php artisan migrate --force --no-interaction" www-data
         
         # Update admin password if requested

@@ -7,13 +7,13 @@ BookStack is an opinionated wiki system that provides a pleasant and simple out-
 ## Features
 
 - **PHP 8.2** with Apache web server
-- **SQLite database** for simple, file-based storage (no separate database container needed)
+- **MySQL/MariaDB database support** (BookStack's officially supported databases)
 - **All required PHP extensions** for BookStack functionality
 - **Configurable admin credentials** via environment variables
 - **Optimized configuration** for performance and security
-- **Volume support** for persistent data storage (uploads and database)
+- **Volume support** for persistent data storage
 - **Health checks** included
-- **Simple Docker setup** with docker-compose
+- **Simple Docker setup**
 
 ## Quick Start
 
@@ -24,16 +24,20 @@ BookStack is an opinionated wiki system that provides a pleasant and simple out-
 docker build -t bookstack .
 
 # Run the container (admin credentials and timezone are REQUIRED)
+# You must provide database connection details
 docker run -d \
   --name bookstack \
   -p 8080:80 \
   -v bookstack_uploads:/var/www/html/storage/uploads \
-  -v bookstack_database:/var/www/html/storage/database \
   -e BOOKSTACK_ADMIN_USER=admin \
   -e BOOKSTACK_ADMIN_PASSWORD=changeme123 \
   -e BOOKSTACK_ADMIN_NAME=Admin \
   -e TZ=UTC \
   -e BOOKSTACK_APP_URL=http://localhost:8080 \
+  -e DB_HOST=your-db-host \
+  -e DB_DATABASE=bookstack \
+  -e DB_USERNAME=bookstack \
+  -e DB_PASSWORD=your-db-password \
   --restart unless-stopped \
   bookstack
 ```
@@ -67,11 +71,16 @@ docker run -d \
 - `BOOKSTACK_ADMIN_NAME`: Admin display name (default: "Admin")
 - `BOOKSTACK_APP_URL`: Application URL (default: "http://localhost:8080")
 - `BOOKSTACK_UPDATE_ADMIN_PASSWORD`: Set to "true" to force update admin password on restart (default: "false")
+- `DB_HOST`: Database host (default: uses internal connection if not set)
+- `DB_PORT`: Database port (default: 3306)
+- `DB_DATABASE`: Database name (default: bookstack)
+- `DB_USERNAME`: Database username
+- `DB_PASSWORD`: Database password
 
 ### Volumes
 
 - `/var/www/html/storage/uploads`: File uploads (images, attachments, etc.)
-- `/var/www/html/storage/database`: SQLite database file
+- `/var/www/html/public/uploads`: Public uploaded files
 
 ### Ports
 
@@ -79,14 +88,20 @@ docker run -d \
 
 ## Database
 
-This container uses **SQLite** as the database backend, which means:
+**Important Note**: BookStack officially only supports MySQL/MariaDB databases. While this Docker image was initially designed to use SQLite for simplicity, BookStack's migrations are not compatible with SQLite.
 
-- **No separate database container required** - everything runs in one container
-- **Simple file-based storage** - the database is stored as a single file
-- **Easy backups** - just backup the database volume
-- **Perfect for small to medium deployments** (up to thousands of pages)
+**We recommend using an external MySQL/MariaDB database** for proper BookStack operation. You can:
 
-The SQLite database file is located at `/var/www/html/storage/database/database.sqlite` inside the container.
+1. Use a managed database service
+2. Run a separate MariaDB container
+3. Use an existing MySQL/MariaDB server on your network
+
+Configure the database connection via environment variables:
+- `DB_HOST` - Database host
+- `DB_PORT` - Database port (default: 3306)
+- `DB_DATABASE` - Database name
+- `DB_USERNAME` - Database username
+- `DB_PASSWORD` - Database password
 
 ## Security Considerations
 
@@ -128,10 +143,13 @@ docker run -d \
   --name bookstack \
   -p 8080:80 \
   -v bookstack_uploads:/var/www/html/storage/uploads \
-  -v bookstack_database:/var/www/html/storage/database \
   -e BOOKSTACK_ADMIN_USER=admin \
   -e BOOKSTACK_ADMIN_PASSWORD=MySecurePass123! \
   -e TZ=Europe/London \
+  -e DB_HOST=mariadb.example.com \
+  -e DB_DATABASE=bookstack \
+  -e DB_USERNAME=bookstack \
+  -e DB_PASSWORD=dbpassword \
   --restart unless-stopped \
   bookstack
 
@@ -140,12 +158,15 @@ docker run -d \
   --name bookstack \
   -p 8080:80 \
   -v bookstack_uploads:/var/www/html/storage/uploads \
-  -v bookstack_database:/var/www/html/storage/database \
   -e BOOKSTACK_ADMIN_USER=johndoe \
   -e BOOKSTACK_ADMIN_PASSWORD=MySecurePass123! \
   -e BOOKSTACK_ADMIN_NAME="John Doe" \
   -e BOOKSTACK_APP_URL=https://wiki.mycompany.com \
   -e TZ=America/Chicago \
+  -e DB_HOST=db.internal \
+  -e DB_DATABASE=bookstack \
+  -e DB_USERNAME=bookstack_user \
+  -e DB_PASSWORD=secure_db_pass \
   --restart unless-stopped \
   bookstack
 ```
@@ -162,15 +183,9 @@ Common examples: `America/New_York`, `Europe/London`, `Asia/Tokyo`, `UTC`
 
 ### Backup
 
-To backup your BookStack data:
+To backup your BookStack uploads:
 
 ```bash
-# Backup database
-docker run --rm \
-  -v bookstack_database:/data \
-  -v $(pwd)/backup:/backup \
-  alpine tar czf /backup/bookstack-database-$(date +%Y%m%d).tar.gz -C /data .
-
 # Backup uploads
 docker run --rm \
   -v bookstack_uploads:/data \
@@ -178,21 +193,19 @@ docker run --rm \
   alpine tar czf /backup/bookstack-uploads-$(date +%Y%m%d).tar.gz -C /data .
 ```
 
+**Note**: Database backups should be done using your MySQL/MariaDB database backup tools (mysqldump, etc.).
+
 ### Restore from Backup
 
 ```bash
-# Restore database
-docker run --rm \
-  -v bookstack_database:/data \
-  -v $(pwd)/backup:/backup \
-  alpine sh -c "cd /data && tar xzf /backup/bookstack-database-YYYYMMDD.tar.gz"
-
 # Restore uploads
 docker run --rm \
   -v bookstack_uploads:/data \
   -v $(pwd)/backup:/backup \
   alpine sh -c "cd /data && tar xzf /backup/bookstack-uploads-YYYYMMDD.tar.gz"
 ```
+
+**Note**: Database restoration should be done using your MySQL/MariaDB database restore tools.
 
 ### Reset Admin Password
 
@@ -206,11 +219,14 @@ docker run -d \
   --name bookstack \
   -p 8080:80 \
   -v bookstack_uploads:/var/www/html/storage/uploads \
-  -v bookstack_database:/var/www/html/storage/database \
   -e BOOKSTACK_ADMIN_USER=admin \
   -e BOOKSTACK_ADMIN_PASSWORD=NewPassword123 \
   -e BOOKSTACK_UPDATE_ADMIN_PASSWORD=true \
   -e TZ=UTC \
+  -e DB_HOST=your-db-host \
+  -e DB_DATABASE=bookstack \
+  -e DB_USERNAME=bookstack \
+  -e DB_PASSWORD=your-db-password \
   bookstack
 
 # Method 2: Use artisan command directly
@@ -221,10 +237,10 @@ docker exec -it bookstack php artisan bookstack:reset-password --email=admin@boo
 
 - **PHP Extensions**: All required extensions are included in this Docker image
 - **Memory**: 256MB RAM minimum, 512MB recommended
+- **Database**: MySQL 5.7+ or MariaDB 10.2+ (external database required)
 - **Storage**: 
   - ~200MB for application
-  - Additional space for uploads and database (varies by usage)
-  - SQLite databases typically use 10-50MB for small to medium sites
+  - Additional space for uploads (varies by usage)
 
 ## Troubleshooting
 
@@ -257,8 +273,8 @@ docker exec bookstack chmod -R 755 /var/www/html/storage
 ### Database Issues
 
 ```bash
-# Check if database exists
-docker exec bookstack ls -lh /var/www/html/storage/database/
+# Test database connection
+docker exec bookstack php artisan tinker --execute="echo DB::connection()->getPdo() ? 'Connected' : 'Failed';"
 
 # Run migrations manually
 docker exec bookstack php artisan migrate --force
@@ -292,15 +308,18 @@ docker rm bookstack
 # Rebuild with new version
 docker build --no-cache -t bookstack .
 
-# Start with same volumes (data persists)
+# Start with same volumes and database (data persists)
 docker run -d \
   --name bookstack \
   -p 8080:80 \
   -v bookstack_uploads:/var/www/html/storage/uploads \
-  -v bookstack_database:/var/www/html/storage/database \
   -e BOOKSTACK_ADMIN_USER=admin \
   -e BOOKSTACK_ADMIN_PASSWORD=changeme123 \
   -e TZ=UTC \
+  -e DB_HOST=your-db-host \
+  -e DB_DATABASE=bookstack \
+  -e DB_USERNAME=bookstack \
+  -e DB_PASSWORD=your-db-password \
   --restart unless-stopped \
   bookstack
 ```
