@@ -89,6 +89,12 @@ APP_TIMEZONE=$TZ
 DB_CONNECTION=sqlite
 DB_DATABASE=/var/www/html/storage/database/database.sqlite
 
+# Additional SQLite settings (ensure no MySQL fallback)
+DB_HOST=
+DB_PORT=
+DB_USERNAME=
+DB_PASSWORD=
+
 # Mail Configuration (optional - configure later)
 MAIL_DRIVER=smtp
 MAIL_HOST=smtp.example.com
@@ -126,9 +132,12 @@ ALLOW_REGISTRATION=false
 EOF
 
 chown www-data:www-data "$ENV_FILE"
-chmod 640 "$ENV_FILE"
+chmod 644 "$ENV_FILE"
 
 echo "Environment file configured"
+
+# Clear any cached config to ensure .env is read fresh
+rm -f /var/www/html/bootstrap/cache/config.php
 
 # Function to initialize database and create admin user
 initialize_bookstack() {
