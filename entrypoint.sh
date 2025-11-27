@@ -214,7 +214,7 @@ initialize_bookstack() {
         echo "Admin user already exists with correct email"
     fi
     
-    # Delete unwanted default users (except system users)
+    # Delete unwanted default users (keep system user with system_name='public')
     echo "Cleaning up default users..."
     su -s /bin/bash -c "cd /var/www/html && php artisan tinker --execute='
         \$users = \\BookStack\\Users\\Models\\User::where(function(\$q) {
@@ -222,7 +222,7 @@ initialize_bookstack() {
         })->get();
         \$deleted = 0;
         foreach (\$users as \$user) {
-            if (!\$user->system_name) {
+            if (\$user->system_name !== \"public\") {
                 \$user->delete();
                 \$deleted++;
             }
