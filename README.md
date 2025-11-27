@@ -47,7 +47,8 @@ docker run -d \
 1. **Access BookStack**: Navigate to `http://localhost:8080`
 
 2. **First Login**: 
-   - Email: `your-username@bookstack.local` (where username is what you set via `BOOKSTACK_ADMIN_USER`)
+   - Email: The email from `BOOKSTACK_ADMIN_USER@bookstack.local` 
+     (e.g., if you set `BOOKSTACK_ADMIN_USER=admin`, the email is `admin@bookstack.local`)
    - Password: The password you set via `BOOKSTACK_ADMIN_PASSWORD`
 
 3. **Configure Settings**: 
@@ -55,8 +56,9 @@ docker run -d \
    - Update site name, registration settings, and other preferences
 
 4. **Security**: 
-   - Change the default admin password after first login (or use a strong password from the start)
+   - Use a strong password from the start via `BOOKSTACK_ADMIN_PASSWORD`
    - Configure email settings for password resets and notifications
+   - Consider changing the admin email address in BookStack settings after first login
 
 ## Configuration
 
@@ -70,7 +72,6 @@ docker run -d \
 #### Optional Variables
 - `BOOKSTACK_ADMIN_NAME`: Admin display name (default: "Admin")
 - `BOOKSTACK_APP_URL`: Application URL (default: "http://localhost:8080")
-- `BOOKSTACK_UPDATE_ADMIN_PASSWORD`: Set to "true" to force update admin password on restart (default: "false")
 - `DB_HOST`: Database host (default: uses internal connection if not set)
 - `DB_PORT`: Database port (default: 3306)
 - `DB_DATABASE`: Database name (default: bookstack)
