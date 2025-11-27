@@ -217,9 +217,16 @@ initialize_bookstack() {
     # Delete unwanted default users (except system users)
     echo "Cleaning up default users..."
     su -s /bin/bash -c "cd /var/www/html && php artisan tinker --execute='
-        \$deleted = \\BookStack\\Users\\Models\\User::where(function(\$q) {
+        \$users = \\BookStack\\Users\\Models\\User::where(function(\$q) {
             \$q->where(\"email\", \"admin@admin.com\")->orWhere(\"email\", \"guest@example.com\");
-        })->whereNull(\"system_name\")->delete();
+        })->get();
+        \$deleted = 0;
+        foreach (\$users as \$user) {
+            if (!\$user->system_name) {
+                \$user->delete();
+                \$deleted++;
+            }
+        }
         echo \"Cleaned up \" . \$deleted . \" default users\";
     '" www-data 2>&1
     
