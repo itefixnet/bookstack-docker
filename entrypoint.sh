@@ -71,14 +71,17 @@ fi
 # Create necessary directories
 mkdir -p /var/www/html/storage/uploads
 mkdir -p /var/www/html/public/uploads
+mkdir -p /var/www/.config/psysh
 
 # Set permissions
 chown -R www-data:www-data /var/www/html/storage
 chown -R www-data:www-data /var/www/html/bootstrap/cache
 chown -R www-data:www-data /var/www/html/public/uploads
+chown -R www-data:www-data /var/www/.config
 chmod -R 755 /var/www/html/storage
 chmod -R 755 /var/www/html/bootstrap/cache
 chmod -R 755 /var/www/html/public/uploads
+chmod -R 755 /var/www/.config
 
 # Create or update .env file
 ENV_FILE="/var/www/html/.env"
@@ -182,11 +185,11 @@ initialize_bookstack() {
     echo "Configuring admin user: $ADMIN_NAME ($ADMIN_EMAIL)"
     
     # Check if our admin user already exists
-    CUSTOM_ADMIN_EXISTS=$(su -s /bin/bash -c "cd /var/www/html && php artisan tinker --execute='echo \\BookStack\\Users\\Models\\User::where(\"email\", \"$ADMIN_EMAIL\")->exists() ? \"yes\" : \"no\";'" www-data 2>/dev/null || echo "no")
+    CUSTOM_ADMIN_EXISTS=$(su -s /bin/bash -c "cd /var/www/html && php artisan tinker --execute='echo \\BookStack\\Users\\Models\\User::where(\"email\", \"$ADMIN_EMAIL\")->exists() ? \"yes\" : \"no\";'" www-data 2>&1 | tail -n 1 || echo "no")
     
     if [ "$CUSTOM_ADMIN_EXISTS" = "no" ]; then
         # Our custom admin doesn't exist, check for default admin
-        ADMIN_EXISTS=$(su -s /bin/bash -c "cd /var/www/html && php artisan tinker --execute='echo \\BookStack\\Users\\Models\\User::where(\"email\", \"admin@admin.com\")->exists() ? \"yes\" : \"no\";'" www-data 2>/dev/null || echo "no")
+        ADMIN_EXISTS=$(su -s /bin/bash -c "cd /var/www/html && php artisan tinker --execute='echo \\BookStack\\Users\\Models\\User::where(\"email\", \"admin@admin.com\")->exists() ? \"yes\" : \"no\";'" www-data 2>&1 | tail -n 1 || echo "no")
         
         if [ "$ADMIN_EXISTS" = "yes" ]; then
             # Update existing default admin user
@@ -201,22 +204,24 @@ initialize_bookstack() {
                     \$user->save();
                     echo \"Admin user updated\";
                 }
-            '" www-data
+            '" www-data 2>&1
         else
             # Create new admin user
             echo "Creating admin user..."
-            su -s /bin/bash -c "cd /var/www/html && php artisan bookstack:create-admin --email=\"$ADMIN_EMAIL\" --name=\"$ADMIN_NAME\" --password=\"$ADMIN_PASSWORD\"" www-data
+            su -s /bin/bash -c "cd /var/www/html && php artisan bookstack:create-admin --email=\"$ADMIN_EMAIL\" --name=\"$ADMIN_NAME\" --password=\"$ADMIN_PASSWORD\"" www-data 2>&1
         fi
     else
         echo "Admin user already exists with correct email"
     fi
     
-    # Delete unwanted default users
+    # Delete unwanted default users (except system users)
     echo "Cleaning up default users..."
     su -s /bin/bash -c "cd /var/www/html && php artisan tinker --execute='
-        \\BookStack\\Users\\Models\\User::whereIn(\"email\", [\"admin@admin.com\", \"guest@example.com\"])->whereNull(\"system_name\")->delete();
-        echo \"Default users cleaned up\";
-    '" www-data 2>/dev/null || true
+        \$deleted = \\BookStack\\Users\\Models\\User::where(function(\$q) {
+            \$q->where(\"email\", \"admin@admin.com\")->orWhere(\"email\", \"guest@example.com\");
+        })->whereNull(\"system_name\")->delete();
+        echo \"Cleaned up \" . \$deleted . \" default users\";
+    '" www-data 2>&1
     
     # Clear and optimize cache as www-data user
     echo "Optimizing application..."
