@@ -14,12 +14,15 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     libicu-dev \
     libldap2-dev \
+    libsqlite3-dev \
+    sqlite3 \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
     gd \
     mysqli \
     pdo \
     pdo_mysql \
+    pdo_sqlite \
     zip \
     intl \
     ldap \
