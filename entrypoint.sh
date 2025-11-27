@@ -141,31 +141,31 @@ initialize_bookstack() {
         chown www-data:www-data /var/www/html/storage/database/database.sqlite
         chmod 644 /var/www/html/storage/database/database.sqlite
         
-        # Run migrations
+        # Run migrations as www-data user
         echo "Running database migrations..."
-        php artisan migrate --force --no-interaction
+        su -s /bin/bash -c "cd /var/www/html && php artisan migrate --force --no-interaction" www-data
         
-        # Create admin user
+        # Create admin user as www-data user
         echo "Creating admin user: $ADMIN_USER (email: $ADMIN_EMAIL)"
-        php artisan bookstack:create-admin --email="$ADMIN_EMAIL" --name="$ADMIN_NAME" --password="$ADMIN_PASSWORD"
+        su -s /bin/bash -c "cd /var/www/html && php artisan bookstack:create-admin --email=\"$ADMIN_EMAIL\" --name=\"$ADMIN_NAME\" --password=\"$ADMIN_PASSWORD\"" www-data
         
         echo "BookStack initialization completed!"
     else
         echo "Database already exists, running migrations if needed..."
-        php artisan migrate --force --no-interaction
+        su -s /bin/bash -c "cd /var/www/html && php artisan migrate --force --no-interaction" www-data
         
         # Update admin password if requested
         if [ "$BOOKSTACK_UPDATE_ADMIN_PASSWORD" = "true" ]; then
             echo "Updating admin password..."
-            php artisan bookstack:reset-password --email="$ADMIN_EMAIL" --password="$ADMIN_PASSWORD"
+            su -s /bin/bash -c "cd /var/www/html && php artisan bookstack:reset-password --email=\"$ADMIN_EMAIL\" --password=\"$ADMIN_PASSWORD\"" www-data
         fi
     fi
     
-    # Clear and optimize cache
+    # Clear and optimize cache as www-data user
     echo "Optimizing application..."
-    php artisan cache:clear
-    php artisan config:clear
-    php artisan view:clear
+    su -s /bin/bash -c "cd /var/www/html && php artisan cache:clear" www-data
+    su -s /bin/bash -c "cd /var/www/html && php artisan config:clear" www-data
+    su -s /bin/bash -c "cd /var/www/html && php artisan view:clear" www-data
     
     echo "BookStack is ready!"
 }
