@@ -178,10 +178,29 @@ initialize_bookstack() {
         su -s /bin/bash -c "cd /var/www/html && php artisan migrate --force --no-interaction" www-data
     fi
     
-    # Always ensure admin user is configured with current environment variables
-    # Using --initial flag updates the default admin@admin.com user if it exists
+    # Check if admin user exists, if not create it, otherwise update it
     echo "Configuring admin user: $ADMIN_NAME ($ADMIN_EMAIL)"
-    su -s /bin/bash -c "cd /var/www/html && php artisan bookstack:create-admin --email=\"$ADMIN_EMAIL\" --name=\"$ADMIN_NAME\" --password=\"$ADMIN_PASSWORD\" --initial" www-data
+    ADMIN_EXISTS=$(su -s /bin/bash -c "cd /var/www/html && php artisan tinker --execute='echo \\BookStack\\Users\\Models\\User::where(\"email\", \"admin@admin.com\")->exists() ? \"yes\" : \"no\";'" www-data 2>/dev/null || echo "no")
+    
+    if [ "$ADMIN_EXISTS" = "yes" ]; then
+        # Update existing default admin user
+        echo "Updating default admin user..."
+        su -s /bin/bash -c "cd /var/www/html && php artisan tinker --execute='
+            \$user = \\BookStack\\Users\\Models\\User::where(\"email\", \"admin@admin.com\")->first();
+            if (\$user) {
+                \$user->email = \"$ADMIN_EMAIL\";
+                \$user->name = \"$ADMIN_NAME\";
+                \$user->password = \\Illuminate\\Support\\Facades\\Hash::make(\"$ADMIN_PASSWORD\");
+                \$user->email_confirmed = true;
+                \$user->save();
+                echo \"Admin user updated\";
+            }
+        '" www-data
+    else
+        # Create new admin user
+        echo "Creating admin user..."
+        su -s /bin/bash -c "cd /var/www/html && php artisan bookstack:create-admin --email=\"$ADMIN_EMAIL\" --name=\"$ADMIN_NAME\" --password=\"$ADMIN_PASSWORD\"" www-data
+    fi
     
     # Clear and optimize cache as www-data user
     echo "Optimizing application..."
