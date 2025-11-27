@@ -1,7 +1,7 @@
 FROM php:8.2-apache
 
 # Build argument for BookStack version
-ARG BOOKSTACK_VERSION=v24.10.1
+ARG BOOKSTACK_VERSION=v25.11.4
 
 # Install system dependencies and PHP extensions required for BookStack
 RUN apt-get update && apt-get install -y \
