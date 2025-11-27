@@ -172,18 +172,16 @@ initialize_bookstack() {
         echo "Running database migrations..."
         su -s /bin/bash -c "cd /var/www/html && php artisan migrate --force --no-interaction" www-data
         
-        # Create/update admin user using --initial flag
-        # This will update the default admin@admin.com user if it exists
-        echo "Setting up admin user: $ADMIN_NAME ($ADMIN_EMAIL)"
-        su -s /bin/bash -c "cd /var/www/html && php artisan bookstack:create-admin --email=\"$ADMIN_EMAIL\" --name=\"$ADMIN_NAME\" --password=\"$ADMIN_PASSWORD\" --initial" www-data
-        
-        echo "BookStack initialization completed!"
+        echo "BookStack database initialized!"
     else
         echo "Database already initialized, running migrations if needed..."
         su -s /bin/bash -c "cd /var/www/html && php artisan migrate --force --no-interaction" www-data
-        
-        echo "Database and admin user already configured."
     fi
+    
+    # Always ensure admin user is configured with current environment variables
+    # Using --initial flag updates the default admin@admin.com user if it exists
+    echo "Configuring admin user: $ADMIN_NAME ($ADMIN_EMAIL)"
+    su -s /bin/bash -c "cd /var/www/html && php artisan bookstack:create-admin --email=\"$ADMIN_EMAIL\" --name=\"$ADMIN_NAME\" --password=\"$ADMIN_PASSWORD\" --initial" www-data
     
     # Clear and optimize cache as www-data user
     echo "Optimizing application..."
