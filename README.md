@@ -152,7 +152,7 @@ docker run -d \
   -p 8080:80 \
   -v bookstack_storage:/var/www/html/storage/uploads \
   -v bookstack_public:/var/www/html/public/uploads \
-  -e BOOKSTACK_ADMIN_USER=admin \
+  -e BOOKSTACK_ADMIN_EMAIL=admin@example.com \
   -e BOOKSTACK_ADMIN_PASSWORD=MySecurePass123! \
   -e TZ=Europe/London \
   -e DB_HOST=mariadb.example.com \
@@ -168,7 +168,7 @@ docker run -d \
   -p 8080:80 \
   -v bookstack_storage:/var/www/html/storage/uploads \
   -v bookstack_public:/var/www/html/public/uploads \
-  -e BOOKSTACK_ADMIN_USER=johndoe \
+  -e BOOKSTACK_ADMIN_EMAIL=johndoe@example.com \
   -e BOOKSTACK_ADMIN_PASSWORD=MySecurePass123! \
   -e BOOKSTACK_ADMIN_NAME="John Doe" \
   -e BOOKSTACK_APP_URL=https://wiki.mycompany.com \
@@ -189,7 +189,7 @@ For a complete list of timezone identifiers, see:
 
 Common examples: `America/New_York`, `Europe/London`, `Asia/Tokyo`, `UTC`
 
-**Note**: The container will not start without `BOOKSTACK_ADMIN_USER`, `BOOKSTACK_ADMIN_PASSWORD`, and `TZ` environment variables.
+**Note**: The container will not start without the required environment variables: `BOOKSTACK_ADMIN_EMAIL`, `BOOKSTACK_ADMIN_PASSWORD`, `TZ`, `DB_HOST`, `DB_DATABASE`, `DB_USERNAME`, and `DB_PASSWORD`.
 
 ### Backup
 
@@ -234,16 +234,16 @@ docker run --rm \
 If you forget the admin password:
 
 ```bash
-# Method 1: Set environment variable and restart
+# Method 1: Restart container (admin credentials are updated on every start)
 docker stop bookstack
 docker rm bookstack
 docker run -d \
   --name bookstack \
   -p 8080:80 \
-  -v bookstack_uploads:/var/www/html/storage/uploads \
-  -e BOOKSTACK_ADMIN_USER=admin \
+  -v bookstack_storage:/var/www/html/storage/uploads \
+  -v bookstack_public:/var/www/html/public/uploads \
+  -e BOOKSTACK_ADMIN_EMAIL=admin@example.com \
   -e BOOKSTACK_ADMIN_PASSWORD=NewPassword123 \
-  -e BOOKSTACK_UPDATE_ADMIN_PASSWORD=true \
   -e TZ=UTC \
   -e DB_HOST=your-db-host \
   -e DB_DATABASE=bookstack \
@@ -252,7 +252,7 @@ docker run -d \
   bookstack
 
 # Method 2: Use artisan command directly
-docker exec -it bookstack php artisan bookstack:reset-password --email=admin@bookstack.local --password=NewPassword123
+docker exec -it bookstack php artisan bookstack:reset-password --email=admin@example.com --password=NewPassword123
 ```
 
 ## System Requirements
@@ -336,7 +336,7 @@ docker run -d \
   -p 8080:80 \
   -v bookstack_storage:/var/www/html/storage/uploads \
   -v bookstack_public:/var/www/html/public/uploads \
-  -e BOOKSTACK_ADMIN_USER=admin \
+  -e BOOKSTACK_ADMIN_EMAIL=admin@example.com \
   -e BOOKSTACK_ADMIN_PASSWORD=changeme123 \
   -e TZ=UTC \
   -e DB_HOST=your-db-host \
