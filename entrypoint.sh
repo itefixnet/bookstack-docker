@@ -167,9 +167,8 @@ AUTH_AUTO_INITIATE=false
 FILE_UPLOAD_SIZE_LIMIT=50
 DRAWIO=true
 
-# Disable public registration by default
+# Security settings
 ALLOW_CONTENT_SCRIPTS=false
-ALLOW_REGISTRATION=false
 EOF
 
 chown www-data:www-data "$ENV_FILE"

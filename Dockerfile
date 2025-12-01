@@ -38,7 +38,8 @@ WORKDIR /var/www/html
 
 # Download and install BookStack
 RUN git clone --branch ${BOOKSTACK_VERSION} --single-branch --depth 1 https://github.com/BookStackApp/BookStack.git . \
-    && composer install --no-dev --no-interaction --prefer-dist \
+    && chmod +x ./bookstack-system-cli \
+    && ./bookstack-system-cli download-vendor \
     && chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/public/uploads
 
