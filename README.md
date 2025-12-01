@@ -1,5 +1,8 @@
 # BookStack Docker Container
 
+[![Docker Hub](https://img.shields.io/docker/v/itefixnet/bookstack?sort=semver&logo=docker)](https://hub.docker.com/r/itefixnet/bookstack)
+[![Docker Pulls](https://img.shields.io/docker/pulls/itefixnet/bookstack)](https://hub.docker.com/r/itefixnet/bookstack)
+
 A Docker container for [BookStack](https://www.bookstackapp.com/) - a simple, self-hosted platform for organizing and storing information.
 
 BookStack is an opinionated wiki system that provides a pleasant and simple out-of-the-box experience. New users to an instance should find the experience intuitive and only basic word-processing skills should be required to get involved in creating content.
@@ -17,7 +20,29 @@ BookStack is an opinionated wiki system that provides a pleasant and simple out-
 
 ## Quick Start
 
-### Using Docker CLI
+### Using Docker Hub Image (Recommended)
+
+```bash
+# Pull and run the pre-built image from Docker Hub
+docker run -d \
+  --name bookstack \
+  -p 8080:80 \
+  -v bookstack_storage:/var/www/html/storage/uploads \
+  -v bookstack_public:/var/www/html/public/uploads \
+  -e BOOKSTACK_ADMIN_EMAIL=admin@example.com \
+  -e BOOKSTACK_ADMIN_PASSWORD=changeme123 \
+  -e BOOKSTACK_ADMIN_NAME=Admin \
+  -e TZ=UTC \
+  -e BOOKSTACK_APP_URL=http://localhost:8080 \
+  -e DB_HOST=your-db-host \
+  -e DB_DATABASE=bookstack \
+  -e DB_USERNAME=bookstack \
+  -e DB_PASSWORD=your-db-password \
+  --restart unless-stopped \
+  itefixnet/bookstack:latest
+```
+
+### Building from Source
 
 ```bash
 # Build the image
@@ -390,6 +415,7 @@ This Docker configuration is provided as-is under BSD 2-Clause License. BookStac
 
 ## Links
 
+- **[Docker Hub Image](https://hub.docker.com/r/itefixnet/bookstack)** - Pre-built images
 - [BookStack Official Website](https://www.bookstackapp.com/)
 - [BookStack GitHub Repository](https://github.com/BookStackApp/BookStack)
 - [BookStack Documentation](https://www.bookstackapp.com/docs/)
