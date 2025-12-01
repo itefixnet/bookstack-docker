@@ -22,6 +22,26 @@ if [ -z "$TZ" ]; then
     exit 1
 fi
 
+if [ -z "$DB_HOST" ]; then
+    echo "ERROR: DB_HOST environment variable is required"
+    exit 1
+fi
+
+if [ -z "$DB_DATABASE" ]; then
+    echo "ERROR: DB_DATABASE environment variable is required"
+    exit 1
+fi
+
+if [ -z "$DB_USERNAME" ]; then
+    echo "ERROR: DB_USERNAME environment variable is required"
+    exit 1
+fi
+
+if [ -z "$DB_PASSWORD" ]; then
+    echo "ERROR: DB_PASSWORD environment variable is required"
+    exit 1
+fi
+
 # Use environment variables
 ADMIN_EMAIL="$BOOKSTACK_ADMIN_EMAIL"
 ADMIN_PASSWORD="$BOOKSTACK_ADMIN_PASSWORD"
@@ -29,11 +49,11 @@ ADMIN_NAME="${BOOKSTACK_ADMIN_NAME:-Admin}"
 APP_URL="${BOOKSTACK_APP_URL:-http://localhost:8080}"
 
 # Database configuration
-DB_HOST="${DB_HOST:-mariadb}"
+DB_HOST="$DB_HOST"
 DB_PORT="${DB_PORT:-3306}"
-DB_DATABASE="${DB_DATABASE:-bookstack}"
-DB_USERNAME="${DB_USERNAME:-bookstack}"
-DB_PASSWORD="${DB_PASSWORD:-bookstack}"
+DB_DATABASE="$DB_DATABASE"
+DB_USERNAME="$DB_USERNAME"
+DB_PASSWORD="$DB_PASSWORD"
 
 # Set timezone
 echo "Setting timezone to: $TZ"

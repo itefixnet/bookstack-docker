@@ -67,15 +67,15 @@ docker run -d \
 - `BOOKSTACK_ADMIN_EMAIL`: Admin email address (**REQUIRED**)
 - `BOOKSTACK_ADMIN_PASSWORD`: Admin password (**REQUIRED**)
 - `TZ`: Timezone (**REQUIRED**) - See [TIMEZONES.md](TIMEZONES.md) or [Wikipedia](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
+- `DB_HOST`: Database host (**REQUIRED**)
+- `DB_DATABASE`: Database name (**REQUIRED**)
+- `DB_USERNAME`: Database username (**REQUIRED**)
+- `DB_PASSWORD`: Database password (**REQUIRED**)
 
 #### Optional Variables
 - `BOOKSTACK_ADMIN_NAME`: Admin display name (default: "Admin")
 - `BOOKSTACK_APP_URL`: Application URL (default: "http://localhost:8080")
-- `DB_HOST`: Database host (default: uses internal connection if not set)
 - `DB_PORT`: Database port (default: 3306)
-- `DB_DATABASE`: Database name (default: bookstack)
-- `DB_USERNAME`: Database username
-- `DB_PASSWORD`: Database password
 
 ### Volumes
 
