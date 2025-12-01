@@ -155,7 +155,7 @@ Source code and Dockerfile available at: [github.com/itefixnet/bookstack-docker]
 
 ## License
 
-This Docker container is provided under the MIT License. BookStack itself is licensed under the MIT License.
+This Docker container is provided under the BSD 2-Clause License. BookStack itself is licensed under the MIT License.
 
 ## Support
 
