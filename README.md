@@ -1,8 +1,5 @@
 # BookStack Docker Container
 
-[![Docker Hub](https://img.shields.io/docker/v/itefixnet/bookstack?sort=semver&logo=docker)](https://hub.docker.com/r/itefixnet/bookstack)
-[![Docker Pulls](https://img.shields.io/docker/pulls/itefixnet/bookstack)](https://hub.docker.com/r/itefixnet/bookstack)
-
 A Docker container for [BookStack](https://www.bookstackapp.com/) - a simple, self-hosted platform for organizing and storing information.
 
 BookStack is an opinionated wiki system that provides a pleasant and simple out-of-the-box experience. New users to an instance should find the experience intuitive and only basic word-processing skills should be required to get involved in creating content.
