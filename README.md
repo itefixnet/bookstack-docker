@@ -88,20 +88,18 @@ docker run -d \
 
 ## Database
 
-**Important Note**: BookStack officially only supports MySQL/MariaDB databases. While this Docker image was initially designed to use SQLite for simplicity, BookStack's migrations are not compatible with SQLite.
+BookStack requires a MySQL or MariaDB database. You can use:
 
-**We recommend using an external MySQL/MariaDB database** for proper BookStack operation. You can:
-
-1. Use a managed database service
-2. Run a separate MariaDB container
-3. Use an existing MySQL/MariaDB server on your network
+1. A managed database service
+2. A separate MariaDB/MySQL container
+3. An existing MySQL/MariaDB server on your network
 
 Configure the database connection via environment variables:
-- `DB_HOST` - Database host
+- `DB_HOST` - Database host (**REQUIRED**)
 - `DB_PORT` - Database port (default: 3306)
-- `DB_DATABASE` - Database name
-- `DB_USERNAME` - Database username
-- `DB_PASSWORD` - Database password
+- `DB_DATABASE` - Database name (**REQUIRED**)
+- `DB_USERNAME` - Database username (**REQUIRED**)
+- `DB_PASSWORD` - Database password (**REQUIRED**)
 
 ## Security Considerations
 
