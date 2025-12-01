@@ -28,7 +28,8 @@ docker build -t bookstack .
 docker run -d \
   --name bookstack \
   -p 8080:80 \
-  -v bookstack_uploads:/var/www/html/storage/uploads \
+  -v bookstack_storage:/var/www/html/storage/uploads \
+  -v bookstack_public:/var/www/html/public/uploads \
   -e BOOKSTACK_ADMIN_EMAIL=admin@example.com \
   -e BOOKSTACK_ADMIN_PASSWORD=changeme123 \
   -e BOOKSTACK_ADMIN_NAME=Admin \
@@ -79,8 +80,17 @@ docker run -d \
 
 ### Volumes
 
-- `/var/www/html/storage/uploads`: File uploads (images, attachments, etc.)
+BookStack stores uploaded files in two locations:
+
+- `/var/www/html/storage/uploads`: Internal storage for file uploads (images, attachments, etc.)
 - `/var/www/html/public/uploads`: Public uploaded files
+
+These volumes should be mounted to ensure data persists across container restarts:
+
+```bash
+-v bookstack_storage:/var/www/html/storage/uploads \
+-v bookstack_public:/var/www/html/public/uploads
+```
 
 ### Ports
 
@@ -140,7 +150,8 @@ All required variables must be provided:
 docker run -d \
   --name bookstack \
   -p 8080:80 \
-  -v bookstack_uploads:/var/www/html/storage/uploads \
+  -v bookstack_storage:/var/www/html/storage/uploads \
+  -v bookstack_public:/var/www/html/public/uploads \
   -e BOOKSTACK_ADMIN_USER=admin \
   -e BOOKSTACK_ADMIN_PASSWORD=MySecurePass123! \
   -e TZ=Europe/London \
@@ -155,7 +166,8 @@ docker run -d \
 docker run -d \
   --name bookstack \
   -p 8080:80 \
-  -v bookstack_uploads:/var/www/html/storage/uploads \
+  -v bookstack_storage:/var/www/html/storage/uploads \
+  -v bookstack_public:/var/www/html/public/uploads \
   -e BOOKSTACK_ADMIN_USER=johndoe \
   -e BOOKSTACK_ADMIN_PASSWORD=MySecurePass123! \
   -e BOOKSTACK_ADMIN_NAME="John Doe" \
@@ -181,14 +193,20 @@ Common examples: `America/New_York`, `Europe/London`, `Asia/Tokyo`, `UTC`
 
 ### Backup
 
-To backup your BookStack uploads:
+To backup your BookStack data:
 
 ```bash
-# Backup uploads
+# Backup storage uploads
 docker run --rm \
-  -v bookstack_uploads:/data \
+  -v bookstack_storage:/data \
   -v $(pwd)/backup:/backup \
-  alpine tar czf /backup/bookstack-uploads-$(date +%Y%m%d).tar.gz -C /data .
+  alpine tar czf /backup/bookstack-storage-$(date +%Y%m%d).tar.gz -C /data .
+
+# Backup public uploads
+docker run --rm \
+  -v bookstack_public:/data \
+  -v $(pwd)/backup:/backup \
+  alpine tar czf /backup/bookstack-public-$(date +%Y%m%d).tar.gz -C /data .
 ```
 
 **Note**: Database backups should be done using your MySQL/MariaDB database backup tools (mysqldump, etc.).
@@ -196,11 +214,17 @@ docker run --rm \
 ### Restore from Backup
 
 ```bash
-# Restore uploads
+# Restore storage uploads
 docker run --rm \
-  -v bookstack_uploads:/data \
+  -v bookstack_storage:/data \
   -v $(pwd)/backup:/backup \
-  alpine sh -c "cd /data && tar xzf /backup/bookstack-uploads-YYYYMMDD.tar.gz"
+  alpine sh -c "cd /data && tar xzf /backup/bookstack-storage-YYYYMMDD.tar.gz"
+
+# Restore public uploads
+docker run --rm \
+  -v bookstack_public:/data \
+  -v $(pwd)/backup:/backup \
+  alpine sh -c "cd /data && tar xzf /backup/bookstack-public-YYYYMMDD.tar.gz"
 ```
 
 **Note**: Database restoration should be done using your MySQL/MariaDB database restore tools.
@@ -310,7 +334,8 @@ docker build --no-cache -t bookstack .
 docker run -d \
   --name bookstack \
   -p 8080:80 \
-  -v bookstack_uploads:/var/www/html/storage/uploads \
+  -v bookstack_storage:/var/www/html/storage/uploads \
+  -v bookstack_public:/var/www/html/public/uploads \
   -e BOOKSTACK_ADMIN_USER=admin \
   -e BOOKSTACK_ADMIN_PASSWORD=changeme123 \
   -e TZ=UTC \
